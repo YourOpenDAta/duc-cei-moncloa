@@ -1,0 +1,147 @@
+version: '2'
+services:
+
+  mysql:
+    image: mysql/mysql-server:5.7.21
+    ports:
+      - "3306:3306"
+    networks:
+      idm_network:
+        ipv4_address: 172.18.1.5
+    volumes:
+      - vol-mysql:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=idm
+      - MYSQL_ROOT_HOST=172.18.1.6
+
+  fiware-idm:
+    image: fiware/idm
+    ports:
+      - "3000:3000"
+      - "443:443"
+    networks:
+      idm_network:
+        ipv4_address: 172.18.1.6
+    stdin_open: true
+    tty: true
+    environment:
+      - IDM_DB_HOST=mysql
+      - IDM_PTP_HOST=172.18.1.14
+      - IDM_PTP_PORT=8092
+      - IDM_USAGE_CONTROL_ENABLED=true
+    volumes:
+      - ./docker-entrypoint.sh:/opt/fiware-idm/docker-entrypoint.sh
+      - ./package.json:/opt/fiware-idm/package.json
+
+  cep-master:
+    image: ging/flink-cep-master:1.7.2-hadoop2.8
+    hostname: cep-master
+    container_name: cep-master
+    expose:
+      - "6123"
+    ports:
+      - "8081:8081"
+    environment:
+      - FLINK_PORT=8081
+      - INIT_DAEMON_STEP=setup_flink
+    networks:
+      idm_network:
+        ipv4_address: 172.18.1.7
+
+  cep-worker:
+    image: ging/flink-cep-worker:1.7.2-hadoop2.8
+    hostname: cep-worker
+    container_name: cep-worker
+    expose:
+      - "6121"
+      - "6122"
+    ports:
+      - "9200:9200"
+    depends_on:
+      - cep-master
+    links:
+      - "cep-master:cep-master"
+    environment:
+      - FLINK_MASTER_PORT_6123_TCP_ADDR=cep-master
+    networks:
+      idm_network:
+        ipv4_address: 172.18.1.8
+  mongo:
+    image: mongo:3.4
+    command: --nojournal
+    networks:
+      idm_network:
+        ipv4_address: 172.18.1.9
+
+  orion:
+    image: fiware/orion
+    links:
+      - mongo
+    ports:
+      - "1026:1026"
+    command: -dbhost mongo
+    networks:
+      idm_network:
+        ipv4_address: 172.18.1.10
+
+  pep-ptp:
+    image: ging/pep-ptp
+    hostname: pep-ptp
+    container_name: pep-ptp
+    ports:
+      - "24225:24225"
+    environment:
+      - PEP_PROXY_PORT=24225
+      - PEP_PROXY_IDM_HOST=172.18.1.6
+      - PEP_PROXY_IDM_PORT=3000
+      - PEP_PROXY_APP_HOST=172.18.1.8
+      - PEP_PROXY_APP_PORT=9200
+      - PEP_PROXY_APP_ID=a2b33c0c-c0d1-4807-af21-39613a2ff053
+      - PEP_PROXY_USERNAME=pep_proxy_6d21d0b9-eb0a-484b-b8a7-7719b806e695
+      - PEP_PASSWORD=pep_proxy_cac9bad6-203d-44cc-866f-549149465821
+    depends_on:
+      - fiware-idm
+    networks:
+      idm_network:
+        ipv4_address: 172.18.1.11
+
+  ptp:
+    image: ging/ptp
+    hostname: ptp
+    container_name: ptp
+    expose:
+      - "8092"
+    ports:
+      - "8092:8092"
+    depends_on:
+      - cep-master
+    environment:
+      - FLINK_ENDPOINT=172.18.1.7:8081
+      - IDM_ENDPOINT=172.18.1.6:3000
+    networks:
+      idm_network:
+        ipv4_address: 172.18.1.14
+
+  control-panel:
+    image: ging/control-panel
+    hostname: control-panel
+    container_name: control-panel
+    expose:
+      - "3001"
+    ports:
+      - "3001:3001"
+    depends_on:
+      - cep-master
+    networks:
+      idm_network:
+        ipv4_address: 172.18.1.15
+networks:
+  idm_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.18.1.0/24
+          gateway: 172.18.1.1
+volumes:
+  vol-mysql:
+  vol-mongo:
