@@ -1,21 +1,31 @@
 version: '2'
 services:
 
-  mysql:
-    image: mysql/mysql-server:5.7.21
+  mysql-db:
+    restart: always
+    image: mysql:5.7
+    hostname: mysql-db
+    container_name: db-mysql
+    command: --default-authentication-plugin=mysql_native_password
+    expose:
+      - "3306"
     ports:
       - "3306:3306"
     networks:
       idm_network:
         ipv4_address: 172.18.1.5
+    environment:
+      # Development use only 
+      # Use Docker Secrets for Sensitive Data
+      - MYSQL_ROOT_PASSWORD=secret
+      - MYSQL_ROOT_HOST=172.18.1.6
     volumes:
       - vol-mysql:/var/lib/mysql
-    environment:
-      - MYSQL_ROOT_PASSWORD=idm
-      - MYSQL_ROOT_HOST=172.18.1.6
+
 
   fiware-idm:
-    image: fiware/idm
+    image: fiware/idm:7.8.0
+    container_name: fiware-idm
     ports:
       - "3000:3000"
       - "443:443"
@@ -25,10 +35,18 @@ services:
     stdin_open: true
     tty: true
     environment:
-      - IDM_DB_HOST=mysql
+      - DEBUG=idm:*
+      - IDM_DB_HOST=mysql-db
+      - IDM_HOST=http://localhost:3000
+      - IDM_PORT=3000
       - IDM_PTP_HOST=172.18.1.14
       - IDM_PTP_PORT=8092
       - IDM_USAGE_CONTROL_ENABLED=true
+      - IDM_DB_PASS=secret 
+      - IDM_DB_USER=root
+      - IDM_ADMIN_USER=admin
+      - IDM_ADMIN_EMAIL=admin@test.com
+      - IDM_ADMIN_PASS=1234
     volumes:
       - ./docker-entrypoint.sh:/opt/fiware-idm/docker-entrypoint.sh
       - ./package.json:/opt/fiware-idm/package.json
@@ -68,18 +86,23 @@ services:
         ipv4_address: 172.18.1.8
   mongo:
     image: mongo:3.4
+    container_name: mongo
     command: --nojournal
     networks:
       idm_network:
         ipv4_address: 172.18.1.9
 
   orion:
-    image: fiware/orion
+    image: fiware/orion:2.5.1
+    container_name: orion
     links:
       - mongo
     ports:
       - "1026:1026"
     command: -dbhost mongo
+    depends_on: 
+      - mongo
+
     networks:
       idm_network:
         ipv4_address: 172.18.1.10
@@ -96,9 +119,9 @@ services:
       - PEP_PROXY_IDM_PORT=3000
       - PEP_PROXY_APP_HOST=172.18.1.8
       - PEP_PROXY_APP_PORT=9200
-      - PEP_PROXY_APP_ID=a2b33c0c-c0d1-4807-af21-39613a2ff053
-      - PEP_PROXY_USERNAME=pep_proxy_6d21d0b9-eb0a-484b-b8a7-7719b806e695
-      - PEP_PASSWORD=pep_proxy_cac9bad6-203d-44cc-866f-549149465821
+      - PEP_PROXY_APP_ID=fcf2ac8a-6ce9-4693-9fee-33bd790e1bf2
+      - PEP_PROXY_USERNAME=pep_proxy_c3fc3752-c35f-4fd5-83f4-ffddac38ad79
+      - PEP_PASSWORD=pep_proxy_e352a87a-057e-4d32-90fb-b4924053e877
     depends_on:
       - fiware-idm
     networks:

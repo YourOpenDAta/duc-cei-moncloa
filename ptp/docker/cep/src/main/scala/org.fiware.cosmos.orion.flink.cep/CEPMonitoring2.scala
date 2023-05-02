@@ -1,14 +1,13 @@
 package org.fiware.cosmos.orion.flink.cep
 
-import org.apache.flink.streaming.api.scala._
 import org.apache.flink.cep.nfa.aftermatch.AfterMatchSkipStrategy
+import org.apache.flink.cep.scala.CEP
+import org.apache.flink.cep.scala.pattern.Pattern
 import org.apache.flink.streaming.api.scala.{StreamExecutionEnvironment, _}
 import org.apache.flink.streaming.api.windowing.time.Time
 import org.fiware.cosmos.orion.flink.cep.connector._
 import org.json4s.DefaultFormats
 import org.slf4j.LoggerFactory
-import org.apache.flink.cep.scala.CEP
-import org.apache.flink.cep.scala.pattern.Pattern
 /**
   * FIWARE Data Usage Control
   * Flink Complex Event Processing
@@ -59,7 +58,7 @@ object CEPMonitoring2{
     // Second pattern: Source -> Sink. Aggregation TimeWindow
     val aggregatePattern = Pattern.begin[ExecutionGraph]("start", AfterMatchSkipStrategy.skipPastLastEvent())
       .where(Policies.executionGraphChecker(_, "source"))
-      .notFollowedBy("middle").where(Policies.executionGraphChecker(_, "aggregation", Policies.aggregateTime))
+      .notFollowedBy("middle").where(Policies.executionGraphChecker(_, "removeSensitive", Policies.aggregateTime))
       .followedBy("end").where(Policies.executionGraphChecker(_, "sink")).timesOrMore(1)
 
     CEP.pattern(operationStream, aggregatePattern).select(events =>

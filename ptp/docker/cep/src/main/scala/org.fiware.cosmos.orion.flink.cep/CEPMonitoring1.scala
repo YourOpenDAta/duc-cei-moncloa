@@ -48,7 +48,7 @@ object CEPMonitoring1{
     // Second pattern: Source -> Sink. Aggregation TimeWindow
     val aggregatePattern = Pattern.begin[ExecutionGraph]("start", AfterMatchSkipStrategy.skipPastLastEvent())
       .where(Policies.executionGraphChecker(_, "source"))
-      .notFollowedBy("middle").where(Policies.executionGraphChecker(_, "aggregation",Policies.aggregateTime))
+      .notFollowedBy("middle").where(Policies.executionGraphChecker(_, "removeSensitive",Policies.aggregateTime))
       .followedBy("end").where(Policies.executionGraphChecker(_, "sink")).timesOrMore(1)
     CEP.pattern(operationStream, aggregatePattern).select(events =>
       Signals.createAlert(Policy.AGGREGATION_POLICY, events, Punishment.KILL_JOB))
