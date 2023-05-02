@@ -7,6 +7,14 @@ curl http://localhost:1026/v2/entities -s -S -H 'Content-Type: application/json'
          "value":"20220828132150",
          "type":"Property"
       },
+      "userid":{
+         "value":"ED:94:F6:FD:DD:A3",
+         "type":"Property"
+      },
+      "count":{
+         "value":3,
+         "type":"Property"
+      },
       "minact":{
          "value":"101001011100011",
          "type":"Property"

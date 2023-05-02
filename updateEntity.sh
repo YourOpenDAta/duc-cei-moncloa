@@ -8,21 +8,41 @@ do
 
     curl localhost:1026/v2/entities/wifi001/attrs -s -S -H 'Content-Type: application/json' -X PATCH -d '{
       "userid": {
-        "value": '68:17:29:9A:7F:7$wifi',
+        "value": "68:17:29:9A:7F:7'$wifi'",
         "type": "Property"
       },
       "timestamp":{
-         "value":'2022$timestamp',
+         "value":"2023'$timestamp'",
          "type":"Property"
       },
       "visits":{
-         "value":'$number',
+         "value":"'$number'",
          "type":"Property"
       },
       "count":{
-         "value":'$number',
+         "value":"'$number'",
          "type":"Property"
       }
     }'
     sleep 1
 done
+
+
+curl localhost:1026/v2/entities/wifi001/attrs -s -S -H 'Content-Type: application/json' -X PATCH -d '{
+      "userid": {
+        "value": "68:17:29:9A:7F:7'$wifi'",
+        "type": "Property"
+      },
+      "timestamp":{
+         "value":"2023'$timestamp'",
+         "type":"Property"
+      },
+      "visits":{
+         "value":"'$number'",
+         "type":"Property"
+      },
+      "count":{
+         "value":"'$number'",
+         "type":"Property"
+      }
+    }'
