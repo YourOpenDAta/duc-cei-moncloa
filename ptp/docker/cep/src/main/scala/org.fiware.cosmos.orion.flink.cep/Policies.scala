@@ -9,7 +9,7 @@ import scala.util.matching.Regex
 
 
 object Policy extends Enumeration {
-  val COUNT_POLICY, AGGREGATION_POLICY = Value
+  val COUNT_POLICY, REMOVE_SENSITIVE = Value
 }
 
 object Punishment extends Enumeration {

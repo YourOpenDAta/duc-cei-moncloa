@@ -1,13 +1,12 @@
 package org.fiware.cosmos.orion.flink.cep
 
-import org.fiware.cosmos.orion.flink.cep.CBRequests.logger
 import org.fiware.cosmos.orion.flink.cep.connector.JobId
 import org.json4s.DefaultFormats
 import org.json4s.jackson.Serialization.write
 import org.slf4j.LoggerFactory
+import scalaj.http.Http
 
 import scala.collection._
-import scalaj.http.Http
 
 object Signals {
   implicit val formats = DefaultFormats
@@ -28,8 +27,8 @@ object Signals {
         s"You have already received ${size} events. The maximum allowed is ${Policies.numMaxEvents} events in ${Policies.facturationTime} seconds"
 
       }
-      case Policy.AGGREGATION_POLICY => {
-        s"El procesado de los datos debe hacerse de forma agregada y utilizando una ventana mayor o igual que ${Policies.aggregateTime}"
+      case Policy.REMOVE_SENSITIVE => {
+        s"You must remove sensitive data before use it ${Policies.aggregateTime}"
 
       }
     }
@@ -51,7 +50,7 @@ object Signals {
         "Notification unsubscribed"
       }
       case Punishment.KILL_JOB => {
-        CBRequests.killJob("138.4.7.94:8081", JobId.jobId )
+        CBRequests.killJob("192.168.0.13:8083", JobId.jobId )
         "Killed Job with id " + JobId.jobId
       }
       case Punishment.MONETIZE => {
