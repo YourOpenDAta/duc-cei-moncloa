@@ -161,6 +161,7 @@ services:
 networks:
   idm_network:
     driver: bridge
+    name: idm_network
     ipam:
       config:
         - subnet: 172.18.1.0/24
