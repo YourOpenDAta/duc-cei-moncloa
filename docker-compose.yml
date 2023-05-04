@@ -129,7 +129,7 @@ services:
         ipv4_address: 172.18.1.11
 
   ptp:
-    image: ging/ptp
+    image: ging/ptp:1.0.0
     hostname: ptp
     container_name: ptp
     expose:

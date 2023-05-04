@@ -49,7 +49,7 @@ def addTimeConstraints(start = "00:00", end = "24:00", within = True):
 
 def addPunishment(stream, pattern, rule, punishment):
 	return f"""CEP.pattern({stream}, {pattern}).select(events =>
-      Signals.createAlert(Policy.{rule}, events, Punishment.{punishment}))"""
+      Signals.createAlert(Policy.REMOVE_SENSITIVE, events, Punishment.{punishment}))"""
 
 def envExecute(id):
 	return f"""env.execute("CEPMonitoring.{id}")"""

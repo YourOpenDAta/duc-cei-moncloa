@@ -51,7 +51,7 @@ object CEPMonitoring1{
       .notFollowedBy("middle").where(Policies.executionGraphChecker(_, "removeSensitive",Policies.aggregateTime))
       .followedBy("end").where(Policies.executionGraphChecker(_, "sink")).timesOrMore(1)
     CEP.pattern(operationStream, aggregatePattern).select(events =>
-      Signals.createAlert(Policy.AGGREGATION_POLICY, events, Punishment.KILL_JOB))
+      Signals.createAlert(Policy.REMOVE_SENSITIVE, events, Punishment.KILL_JOB))
 
     env.execute("CEP Monitoring")
   }

@@ -50,7 +50,7 @@ object Signals {
         "Notification unsubscribed"
       }
       case Punishment.KILL_JOB => {
-        CBRequests.killJob("192.168.0.13:8083", JobId.jobId )
+        CBRequests.killJob("20.58.62.225:8083", JobId.jobId )
         "Killed Job with id " + JobId.jobId
       }
       case Punishment.MONETIZE => {
